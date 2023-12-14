@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Mapa observatorios</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <script src="print/leaflet.browser.print.min.js"></script>
+
+
+<style>
+	body {
+	    padding: 0;
+	    margin: 0;
+	}
+	html, body, #map {
+	    height: 100%;
+	    width: 100vw;
+	}
+</style>
+
+	
+</head>
+<body>
+
+<div id='map'></div>
+
+<script>
+	var map = L.map('map').setView([38.34360,-0.49811], 13);
+	
+	// Icono
+		var redIcon = L.icon({
+		iconUrl: 'marker-icon-red.png',
+		shadowUrl: 'marker-icon-shadow.png',
+		iconSize:     [25, 41],
+		shadowSize:   [41, 41],
+		iconAnchor:   [12, 41],
+		shadowAnchor: [4, 41],
+		popupAnchor:  [0, -41]
+	});
+
+	// Analizar la URL
+	var laURL = window.location.href;
+	const arrTxtCoords = laURL.split("?")[1];
+	
+	if (!arrTxtCoords) {
+		console.log('no hay puntos');
+	} else {
+		const arrCoords = arrTxtCoords.split("&");
+		//console.log(arrCoords);
+		var markerArray = [];
+		/*markerArray.push(L.marker([51.505, -0.09]));
+		var group = L.featureGroup(markerArray).addTo(map);
+		map.fitBounds(group.getBounds());*/
+		
+		
+		for (i = 0; i < arrCoords.length; i++) {
+			//console.log(arrCoords[i]);
+			lat = arrCoords[i].split(",")[1]
+			lon = arrCoords[i].split(",")[2]
+			txt = decodeURI(arrCoords[i].split(",")[0])    //.replace(/%20/g, " ")	
+			
+			//var marker = L.marker([lat, lon]).bindTooltip(txt, {permanent: true, direction: 'right'});
+			if (i == 0)  {
+				var marker = L.marker([lat, lon],{icon: redIcon}).bindTooltip("<div style='background:orange; padding:1px 3px 1px 3px'><b>" + txt + "</b></div>", {permanent: true, direction: "right"});
+			} else {
+				var marker = L.marker([lat, lon]).bindTooltip(txt, {permanent: true, direction: "right"});
+			}
+			markerArray.push(marker);			
+		}
+		//console.log(markerArray)
+		var group = L.featureGroup(markerArray).addTo(map);
+		map.fitBounds(group.getBounds());
+		
+	}
+
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: '&copy; Develop by <a href="https://josemamira.github.io/osmTestMap/index.html">Jose Manuel Mira</a> | <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(map);
+	
+	// Print
+	var customActionToPrint = function(context, mode) {
+		return function() {
+			window.alert("Estamos imprimiendo el mapa. Vamos a hacer una impresi&oacute;n peronalizada!");
+			context._printCustom(mode);
+		}
+	}
+
+	L.control.browserPrint({
+		title: 'Imprimir mapa',
+		documentTitle: 'Mapa con localización de observatorios meteorológicos',
+		closePopupsOnPrint: false,
+		printModes: [
+			L.control.browserPrint.mode.landscape("Horizontal","A4"),
+			L.control.browserPrint.mode.portrait("Vertical","A4"),
+			L.control.browserPrint.mode.auto("Autom&aacute;tico", "A4"),
+			L.control.browserPrint.mode.custom("Seleccione zona", "A4")
+		],
+		manualMode: false
+	}).addTo(map);
+		
+</script>
+
+
+
+</body>
+</html>
